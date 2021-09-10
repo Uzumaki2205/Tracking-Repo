@@ -1,0 +1,170 @@
+<style>
+    .not-visible {
+        display: none;
+    }
+</style>
+<div class="columns">
+    <div class="column">
+        <nav class="panel is-primary">
+            <p class="panel-heading">
+                Repositories using webhook
+            </p>
+            {{#each repository}}
+            <a class="panel-block is-active" onclick="showLogs('{{{this}}}')">
+                <span class="panel-icon">
+                    <i class="fas fa-code-branch" aria-hidden="true"></i>
+                </span>
+                {{{this}}}
+            </a>
+            {{/each}}
+        </nav>
+    </div>
+    <div class="column">
+        {{!-- <nav class="panel is-link">
+            <p class="panel-heading">
+                Update Info
+            </p>
+            <a class="panel-block is-active">
+                <span class="panel-icon">
+                    <i class="fas fa-book" aria-hidden="true"></i>
+                </span>
+                REPOSITORY: 
+            </a>
+            <a class="panel-block">
+                <span class="panel-icon">
+                    <i class="fas fa-book" aria-hidden="true"></i>
+                </span>
+                ISSUE:
+            </a>
+            <a class="panel-block">
+                <span class="panel-icon">
+                    <i class="fas fa-book" aria-hidden="true"></i>
+                </span>
+                URL:
+            </a>
+            <a class="panel-block">
+                <span class="panel-icon">
+                    <i class="fas fa-book" aria-hidden="true"></i>
+                </span>
+                CONTENT:
+            </a>
+            <a class="panel-block">
+                <span class="panel-icon">
+                    <i class="fas fa-code-branch" aria-hidden="true"></i>
+                </span>
+                EDITED:
+            </a>
+            <a class="panel-block">
+                <span class="panel-icon">
+                    <i class="fas fa-code-branch" aria-hidden="true"></i>
+                </span>
+                TYPE:
+            </a>
+            <a class="panel-block">
+                <span class="panel-icon">
+                    <i class="fas fa-code-branch" aria-hidden="true"></i>
+                </span>
+                TIMESTAMP:
+            </a>
+            <div class="panel-block">
+                <button class="button is-primary is-outlined is-fullwidth">
+                    Close Panel
+                </button>
+            </div>
+        </nav> --}}
+
+        <nav class="panel is-link">
+            <p class="panel-heading">
+                Logs
+            </p>
+            <div id="containerLog">
+                {{!-- Logs here --}}
+            </div>
+            {{!--<a class="panel-block is-active">
+                <span class="panel-icon">
+                    <i class="fas fa-book" aria-hidden="true"></i>
+                </span>
+                <span id="logRepoName">REPO</span>
+            </a>--}}
+            <div class="panel-block">
+                <button class="button is-primary is-fullwidth" onclick="showMore()">
+                    Load More
+                </button>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<button id="btnTest">TEST</button>
+
+<script>
+    function shortText(text) {
+        if (text.length > 10)
+            return text.substring(0,22) + ' ...';
+        else return text;
+    }
+
+    function RenderContent(payload) {
+        $.ajax({
+            url: "/",
+            type: "GET", //send it through get method
+            data: payload,
+            success: function (response) {
+                var container_log = document.getElementById('containerLog');
+                var joinHtml = '';
+
+                response.forEach(element => {
+                    var message_log = '';
+                    var short_text = shortText(element.content);
+
+                    if (element.type == 'Comment')
+                        message_log = '<span>User ' + '<strong>' + element.user + '</strong>' + ' has comment ' + '<strong>' + short_text + '</strong>' + '</span>';
+                    else if (element.type == 'Edit Comment')
+                        message_log = '<span>Comment ' + '<strong>' + short_text + '</strong>' + ' of user ' + '<strong>' + element.user + '</strong>' + ' has changed to ' + '<strong>' + shortText(element.edited) + '</strong>' + '</span>';
+                    else if (element.type == 'Delete Comment')
+                        message_log = '<span>Comment ' + '<strong>' + short_text + '</strong>' + ' of user ' + '<strong>' + element.user + '</strong>' + ' has been deleted' + '</span>';
+                    //onclick="showMore()"
+                    var html =
+                        '<a class="panel-block is-active" onclick="showModal(' + "'" + (element.content) + "'" + "," + "'" + (element.type) + "'" + ')">' +
+                        '<span class="panel-icon">' +
+                        '<i class="fas fa-book" aria-hidden="true"></i>' +
+                        '</span>' +
+                        message_log +
+                        '</a>';
+                    joinHtml = joinHtml + html;
+                });
+                container_log.innerHTML = joinHtml;
+            },
+            error: function (xhr) {
+                alert('Error when connect to database!!');
+            }
+        });
+    }
+
+    function showLogs(name_repo) {
+        sessionStorage.setItem("name_repo", name_repo);
+        sessionStorage.setItem("limit", 5);
+
+        payload = {
+            name_repo: name_repo,
+        }
+        RenderContent(payload);
+    }
+
+    function showMore() {
+        var name_repo = sessionStorage.getItem("name_repo");
+        var limit = parseInt(sessionStorage.getItem("limit")) + 5;
+        sessionStorage.setItem("limit", limit);
+       
+        payload = {
+            name_repo: name_repo,
+            limit: limit
+        }
+        RenderContent(payload);
+    }
+
+    function showModal(content, type) {
+        console.log(content);
+        console.log(type);
+    }
+</script>
