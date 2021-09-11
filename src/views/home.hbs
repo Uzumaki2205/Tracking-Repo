@@ -2,7 +2,22 @@
     .not-visible {
         display: none;
     }
+    .center {
+        margin: auto;
+        width: 90%;
+        padding: 10px;
+    }
 </style>
+<div class="field has-addons center" style="margin-bottom: 30px;">
+    <div class="control">
+        <p class="input" id="webhook">{{{webhook}}}</p>
+    </div>
+    <div class="control" id="btnCopyUrl" onclick="copyToClipboard('#webhook')">
+        <a class="button is-info">
+            Copy
+        </a>
+    </div>
+</div>
 <div class="columns">
     <div class="column">
         <nav class="panel is-primary">
@@ -93,9 +108,25 @@
             </div>
         </nav>
     </div>
-</div>
 
-<button id="btnTest">TEST</button>
+    <div class="modal" id="modal-info">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Infomation</p>
+                <button class="delete close-modal" aria-label="close" onclick="closeModal()"></button>
+            </header>
+            <section class="modal-card-body">
+                <div id="modalLog">
+                    {{!-- Load infomation javascript --}}
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success close-modal" onclick="closeModal()">Close panel</button>
+            </footer>
+        </div>
+    </div>
+</div>
 
 <script>
     function shortText(text) {
@@ -125,7 +156,7 @@
                         message_log = '<span>Comment ' + '<strong>' + short_text + '</strong>' + ' of user ' + '<strong>' + element.user + '</strong>' + ' has been deleted' + '</span>';
                     //onclick="showMore()"
                     var html =
-                        '<a class="panel-block is-active" onclick="showModal(' + "'" + (element.content) + "'" + "," + "'" + (element.type) + "'" + ')">' +
+                        '<a class="panel-block is-active" onclick="showModal(' + "'" + (element._id) + "'" + ')">' +
                         '<span class="panel-icon">' +
                         '<i class="fas fa-book" aria-hidden="true"></i>' +
                         '</span>' +
@@ -163,8 +194,47 @@
         RenderContent(payload);
     }
 
-    function showModal(content, type) {
-        console.log(content);
-        console.log(type);
+    function showModal(id) {
+        payload = {
+            id: id
+        }
+        
+        $.ajax({
+            url: "/",
+            type: "POST",
+            data: payload,
+            success: function (response) {
+                var modal_log = document.getElementById('modalLog');
+                var html = '<span><strong>Repository:</strong> ' + response.repository + '</span><br>' +
+                '<span><strong>Issue:</strong> ' + response.title + '</span><br>' +
+                '<span><strong>Url:</strong> ' + response.url + '</span><br>' +
+                '<span><strong>User:</strong> ' + response.user + '</span><br>' +
+                '<span><strong>Owner:</strong> ' + response.owner + '</span><br>' +
+                '<span><strong>Content:</strong> ' + response.content + '</span><br>' +
+                '<span><strong>Edited:</strong> ' + response.edited + '</span><br>' +
+                '<span><strong>Type:</strong> ' + response.type + '</span><br>' +
+                '<span><strong>Time:</strong> ' + response.timestamp + '</span><br>';
+
+                modal_log.innerHTML = html;
+                var modal = document.getElementById('modal-info');
+                modal.classList.add('is-active');
+            },
+            error: function (xhr) {
+                alert('Error when connect to database!!');
+            }
+        });
+    }
+
+    function closeModal() {
+        var modal = document.getElementById('modal-info');
+        modal.classList.remove('is-active');
+    }
+
+    function copyToClipboard(element) {
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val($(element).text()).select();
+        document.execCommand("copy");
+        $temp.remove();
     }
 </script>

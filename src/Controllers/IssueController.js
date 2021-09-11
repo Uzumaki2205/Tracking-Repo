@@ -11,4 +11,9 @@ async function QueryRecord(filter, limited) {
     return data;
 }
 
-module.exports = { AllRecord, QueryRecord };
+async function OneRecord(filter) {
+    const data = await Issue.find(filter).limit(1);
+    return data;
+}
+
+module.exports = { AllRecord, QueryRecord, OneRecord };

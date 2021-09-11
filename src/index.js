@@ -14,7 +14,9 @@ app.engine('hbs', handlebars({
   //helpers: require(path.join(__dirname + '/public/js/hbsHelper.js'))
 }));
 
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -31,7 +33,7 @@ app.get('/', async function (req, res) {
       return repository.indexOf(elem) == pos;
     })
     
-    res.render('home', { repository: repository });
+    res.render('home', { repository: repository, webhook: process.env.WEBHOOK });
   }
   else {
     if (req.query.limit) {
@@ -42,11 +44,17 @@ app.get('/', async function (req, res) {
   }
 })
 
-app.get('/get', async function (req, res) {
-  const data = await IssueController.QueryRecord({ repository: req.query.name_repo });
-  res.send(data);
+app.post('/', async function (req, res) {
+  if(!req.body.id) 
+    res.status(404).send('Not found');
+  else {
+    const data = await IssueController.QueryRecord({ _id: req.body.id }, 1);
+    if (data == null)
+      res.status(204).send('No Content');
+    else res.send(data[0]);
+  }
 })
- 
+
 console.log('App listening on port ' + port);
 app.listen(port);
 
