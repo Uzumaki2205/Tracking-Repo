@@ -16,5 +16,7 @@
 
 ## Using
 
+-   Run ```npm install``` in command line/terminal on directory of project
 -   Change MONGOSTRING in .env to your connection string.
 -   Copy link webhook and paste to repository webhook setting.
+-   Run ```npm start```
