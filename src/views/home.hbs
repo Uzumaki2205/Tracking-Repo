@@ -147,8 +147,10 @@
                 response.forEach(element => {
                     var message_log = '';
                     var short_text = shortText(element.content);
-
-                    if (element.type == 'Comment')
+                    
+                    if (element.type == 'Create Issue')
+                        message_log = '<span>User ' + '<strong>' + element.user + '</strong>' + ' has create new issue: ' + '<strong>' + short_text + '</strong>' + '</span>';
+                    else if (element.type == 'Comment')
                         message_log = '<span>User ' + '<strong>' + element.user + '</strong>' + ' has comment ' + '<strong>' + short_text + '</strong>' + '</span>';
                     else if (element.type == 'Edit Comment')
                         message_log = '<span>Comment ' + '<strong>' + short_text + '</strong>' + ' of user ' + '<strong>' + element.user + '</strong>' + ' has changed to ' + '<strong>' + shortText(element.edited) + '</strong>' + '</span>';
